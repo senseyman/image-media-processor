@@ -7,3 +7,5 @@ go.sum
 *.dll
 *.so
 *.dylib
+
+config.toml
