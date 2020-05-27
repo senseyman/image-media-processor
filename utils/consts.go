@@ -1,9 +1,10 @@
 package utils
 
-// TODO extend codes
 // error codes
 const (
-	ErrFileNotFoundInRequestCode int = iota + 600
+	ErrUnsupportedMethodCode int = iota + 600
+	ErrEmptyRequestCode
+	ErrFileNotFoundInRequestCode
 	ErrParamsNotSetInRequestCode
 	ErrCannotParseRequestParamsCode
 	ErrInvalidRequestParamValuesCode
@@ -15,6 +16,8 @@ const (
 
 // error messages
 const (
+	ErrMsgUnsupportedMethod         = "Unsupported call method"
+	ErrMsgEmptyRequest              = "Empty request"
 	ErrMsgFileNotFoundInRequest     = "File not found in request"
 	ErrMsgParamsNotSetInRequest     = "Params not set in request"
 	ErrMsgCannotParseRequestParams  = "Cannot parse request params"

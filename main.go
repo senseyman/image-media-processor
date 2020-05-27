@@ -15,8 +15,11 @@ var (
 	configPath = "./config.toml"
 )
 
-// TODO create service for DB
-
+/*
+	TODO create template config file in repo
+	TODO add Dockerfile
+	TODO add README.md
+*/
 /*
 	main func start application:
 	- init config
@@ -42,7 +45,7 @@ func main() {
 func createServer(cfg *dto.Config, logger *logrus.Logger) *server.APIServer {
 	logger.Info("Registering services...")
 	imgProcessor := media.NewImageService(logger)
-	awsService := store.NewAwsStoreManager(&cfg.Aws, logger)
+	awsService := store.NewAwsService(&cfg.Aws, logger)
 	mongoDbService := db.NewMongoDbService(&cfg.MongoDb, logger)
 	return server.NewAPIServer(cfg.Server.ServerPort, logger, imgProcessor, awsService, mongoDbService)
 }

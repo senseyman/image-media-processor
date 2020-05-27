@@ -15,6 +15,6 @@ type CloudStore interface {
 
 type DbStore interface {
 	Insert(storeDto *dto.DbImageStoreDAO) error
-	GetPicture(picId uint32, width, height int) *dto.DbImageStoreDAO
+	GetImage(picId uint32, width, height int) *dto.DbImageStoreDAO
 	FindAllPictureByUserId(userId string) []*dto.DbImageStoreDAO
 }

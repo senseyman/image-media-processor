@@ -1,9 +1,12 @@
 package server
 
 import (
+	"encoding/json"
+	"github.com/senseyman/image-media-processor/dto/http_response_dto"
 	"github.com/senseyman/image-media-processor/service"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/validator.v2"
+	"net/http"
 )
 
 type ApiServerRequestProcessor struct {
@@ -22,4 +25,18 @@ func NewApiServerRequestProcessor(logger *logrus.Logger, imgProcessor service.Me
 		cloudStore:       cloudStore,
 		dbStore:          dbStore,
 	}
+}
+
+func writeErrResponseListRequest(w http.ResponseWriter, answer *http_response_dto.UserImagesListResponseDto, encoder *json.Encoder, serverCode int, errCode int, errMsg string) {
+	w.WriteHeader(serverCode)
+	answer.ErrCode = errCode
+	answer.ErrMsg = errMsg
+	encoder.Encode(answer)
+}
+
+func writeErrResponseResizeRequest(w http.ResponseWriter, answer *http_response_dto.ResizeImageResponseDto, encoder *json.Encoder, serverCode int, errCode int, errMsg string) {
+	w.WriteHeader(serverCode)
+	answer.ErrCode = errCode
+	answer.ErrMsg = errMsg
+	encoder.Encode(answer)
 }

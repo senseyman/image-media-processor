@@ -15,36 +15,25 @@ import (
 // Function to handle user request for getting list of all his request history
 // - requested image and resized results
 // - requested resize params
-
 func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	answer := http_response_dto.UserImagesListResponseDto{}
+	answer := &http_response_dto.UserImagesListResponseDto{}
 	jsonEncoder := json.NewEncoder(w)
 	s.logger.Info("Got user request")
 
 	r.ParseForm()
 	rDto := http_request_dto.BaseRequestDto{}
 
-	err := schema.NewDecoder().Decode(&rDto, r.URL.Query())
-
-	if err != nil {
-		s.logger.Error(utils.ErrMsgParamsNotSetInRequest)
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrParamsNotSetInRequestCode
-		answer.ErrMsg = utils.ErrMsgParamsNotSetInRequest
-		jsonEncoder.Encode(answer)
-		return
-	}
+	// try to decode request params
+	schema.NewDecoder().Decode(&rDto, r.URL.Query())
 
 	// validate user request after mapping
-	err = s.requestValidator.Validate(rDto)
+	err := s.requestValidator.Validate(rDto)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrInvalidRequestParamValuesCode
-		answer.ErrMsg = fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
-		s.logger.Errorf(answer.ErrMsg)
-		jsonEncoder.Encode(answer)
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
+		s.logger.Errorf(errMsg)
+		writeErrResponseListRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
 		return
 	}
 	answer.UserId = rDto.UserId
@@ -56,19 +45,21 @@ func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWrit
 	})
 
 	logEntity.Info("Searching user images in DB")
+	// try to find all images in DB by userId
 	allImgs := s.dbStore.FindAllPictureByUserId(rDto.UserId)
 
 	if allImgs == nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		answer.ErrCode = utils.ErrCannotGetUserImagesCode
-		answer.ErrMsg = fmt.Sprintf("%s: %v", utils.ErrMsgCannotGetUserImages, err)
-		logEntity.Errorf(answer.ErrMsg)
-		jsonEncoder.Encode(answer)
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgCannotGetUserImages, err)
+		logEntity.Errorf(errMsg)
+		writeErrResponseListRequest(w, answer, jsonEncoder, http.StatusInternalServerError, utils.ErrCannotGetUserImagesCode, errMsg)
 		return
 	}
 
-	processDbResponse(&answer, allImgs)
+	logEntity.Info("Found records in DB: %d", len(allImgs))
+	// collect all user images through imageId
+	processDbResponse(answer, allImgs)
 
+	// send answer to caller
 	jsonEncoder.Encode(answer)
 }
 

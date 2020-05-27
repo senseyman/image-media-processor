@@ -10,7 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type AwsStoreManager struct {
+// Service for manage user files in Amazon S3 bucket
+type AwsService struct {
 	region string
 	bucket string
 
@@ -18,7 +19,7 @@ type AwsStoreManager struct {
 	session *session.Session
 }
 
-func NewAwsStoreManager(config *dto.AwsConfig, logger *logrus.Logger) *AwsStoreManager {
+func NewAwsService(config *dto.AwsConfig, logger *logrus.Logger) *AwsService {
 
 	sess, err := session.NewSession(
 		&aws.Config{
@@ -30,7 +31,7 @@ func NewAwsStoreManager(config *dto.AwsConfig, logger *logrus.Logger) *AwsStoreM
 		panic(err)
 	}
 
-	return &AwsStoreManager{
+	return &AwsService{
 		region:  config.AwsRegion,
 		session: sess,
 		logger:  logger,
@@ -38,7 +39,8 @@ func NewAwsStoreManager(config *dto.AwsConfig, logger *logrus.Logger) *AwsStoreM
 	}
 }
 
-func (m *AwsStoreManager) Upload(id uint32, userId string, data []*dto.FileInfoDto) (*dto.CloudResponseDto, error) {
+// Upload user files to bucket
+func (m *AwsService) Upload(id uint32, userId string, data []*dto.FileInfoDto) (*dto.CloudResponseDto, error) {
 	uploader := s3manager.NewUploader(m.session)
 
 	target := fmt.Sprintf(fmt.Sprintf("%s/%d/", userId, id))

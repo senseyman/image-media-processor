@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+// Service for saving and reading data of user image resize results.
+// Store image as object with info about original image (path) and resized image (path, requested size params)
 type MongoDbService struct {
 	logger          *logrus.Logger
 	client          *mongo.Client
@@ -39,6 +41,7 @@ func (m *MongoDbService) connect(username, password, address string) *mongo.Clie
 	return client
 }
 
+// Inserting total info of processed image to DB (original url, resized url, resize params)
 func (m *MongoDbService) Insert(storeDto *dto.DbImageStoreDAO) error {
 	if storeDto == nil {
 		return fmt.Errorf("Nil data for inserting ")
@@ -56,7 +59,8 @@ func (m *MongoDbService) Insert(storeDto *dto.DbImageStoreDAO) error {
 	return nil
 }
 
-func (m *MongoDbService) GetPicture(picId uint32, width, height int) *dto.DbImageStoreDAO {
+// Searching image by imageId and size params
+func (m *MongoDbService) GetImage(picId uint32, width, height int) *dto.DbImageStoreDAO {
 	col := m.client.Database(m.ImageStore).Collection(m.UsersCollection)
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -72,6 +76,7 @@ func (m *MongoDbService) GetPicture(picId uint32, width, height int) *dto.DbImag
 	return &res
 }
 
+// Collect all user images by userId
 func (m *MongoDbService) FindAllPictureByUserId(userId string) []*dto.DbImageStoreDAO {
 	col := m.client.Database(m.ImageStore).Collection(m.UsersCollection)
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

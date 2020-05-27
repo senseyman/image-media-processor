@@ -11,7 +11,6 @@ import (
 	"net/http"
 )
 
-// TODO refactor logs
 // Function to handle and process user request for resizing image.
 // Handle func call image resize service
 // Resized image will send to cloud store and save info to DB store
@@ -22,45 +21,43 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	jsonEncoder := json.NewEncoder(w)
 	s.logger.Info("Got user request")
 
-	r.ParseMultipartForm(100 << 20) // max ~ 100 MB
+	// max ~ 100 MB
+	if err := r.ParseMultipartForm(100 << 20); err != nil {
+		s.logger.Errorf("Cannot pars multipart form: %v", err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrEmptyRequestCode, utils.ErrMsgEmptyRequest)
+		return
+	}
+	// getting file from request using tag 'file'
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrFileNotFoundInRequestCode
-		answer.ErrMsg = utils.ErrMsgFileNotFoundInRequest
-		jsonEncoder.Encode(answer)
+		s.logger.Errorf("%s : %v", utils.ErrMsgFileNotFoundInRequest, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrFileNotFoundInRequestCode, utils.ErrMsgFileNotFoundInRequest)
 		return
 	}
 
+	// getting params from request using param name 'params'
 	params := r.FormValue("params")
 	if len(params) == 0 {
-		s.logger.Error(utils.ErrMsgParamsNotSetInRequest)
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrParamsNotSetInRequestCode
-		answer.ErrMsg = utils.ErrMsgParamsNotSetInRequest
-		jsonEncoder.Encode(answer)
+		s.logger.Errorf("%s : %v", utils.ErrMsgParamsNotSetInRequest, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrParamsNotSetInRequestCode, utils.ErrMsgParamsNotSetInRequest)
 		return
 	}
 
+	// decode params to struct
 	rDto := http_request_dto.ResizeImageRequestParamsDto{}
 	err = json.Unmarshal([]byte(params), &rDto)
 	if err != nil {
-		s.logger.Error(utils.ErrMsgCannotParseRequestParams)
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrCannotParseRequestParamsCode
-		answer.ErrMsg = utils.ErrMsgCannotParseRequestParams
-		jsonEncoder.Encode(answer)
+		s.logger.Errorf("%s : %v", utils.ErrMsgCannotParseRequestParams, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrCannotParseRequestParamsCode, utils.ErrMsgCannotParseRequestParams)
 		return
 	}
 
 	// validate user request after mapping
 	err = s.requestValidator.Validate(rDto)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		answer.ErrCode = utils.ErrInvalidRequestParamValuesCode
-		answer.ErrMsg = fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
-		s.logger.Errorf(answer.ErrMsg)
-		jsonEncoder.Encode(answer)
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
+		s.logger.Errorf(errMsg)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
 		return
 	}
 
@@ -85,7 +82,7 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	// check in DB if this picture already exist with the same resizing params
 	// if exist - return known info for this picture
 	// else - continue processing request
-	existEl := s.dbStore.GetPicture(imageId, rDto.Width, rDto.Height)
+	existEl := s.dbStore.GetImage(imageId, rDto.Width, rDto.Height)
 	if existEl != nil {
 		logEntry.Warn("This picture already processed by the same request params")
 
@@ -102,11 +99,8 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	file.Close()
 
 	if err != nil {
-		logEntry.Errorf("RequestId %s -> %s: %v", answer.RequestId, utils.ErrMsgCannotResizeImage, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		answer.ErrCode = utils.ErrCannotResizeImageCode
-		answer.ErrMsg = utils.ErrMsgCannotResizeImage
-		jsonEncoder.Encode(answer)
+		logEntry.Errorf("%s: %v", utils.ErrMsgCannotResizeImage, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusInternalServerError, utils.ErrCannotResizeImageCode, utils.ErrMsgCannotResizeImage)
 		return
 	}
 
@@ -124,14 +118,12 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	})
 
 	if err != nil {
-		logEntry.Errorf("RequestId %s -> %s: %v", answer.RequestId, utils.ErrMsgUploadImage, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		answer.ErrCode = utils.ErrUploadImageCode
-		answer.ErrMsg = utils.ErrMsgUploadImage
-		jsonEncoder.Encode(answer)
+		logEntry.Errorf("%s: %v", answer.RequestId, utils.ErrMsgUploadImage, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusInternalServerError, utils.ErrUploadImageCode, utils.ErrMsgUploadImage)
 		return
 	}
 
+	// prepare http response
 	answer.ImageId = imageId
 	for _, c := range cloudResp.Data {
 		if c.Type == dto.SourceOriginal {
@@ -141,6 +133,7 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 		}
 	}
 
+	// insert information about processed images to DB
 	err = s.dbStore.Insert(&dto.DbImageStoreDAO{
 		UserId:           rDto.UserId,
 		PicId:            imageId,
@@ -151,13 +144,11 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	})
 
 	if err != nil {
-		logEntry.Errorf("RequestId %s -> %s: %v", answer.RequestId, utils.ErrMsgSaveInfoToDB, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		answer.ErrCode = utils.ErrSaveInfoToDBCode
-		answer.ErrMsg = utils.ErrMsgSaveInfoToDB
-		jsonEncoder.Encode(answer)
+		logEntry.Errorf("%s: %v", answer.RequestId, utils.ErrMsgSaveInfoToDB, err)
+		writeErrResponseResizeRequest(w, answer, jsonEncoder, http.StatusInternalServerError, utils.ErrSaveInfoToDBCode, utils.ErrMsgSaveInfoToDB)
 		return
 	}
 
+	// answer to caller
 	jsonEncoder.Encode(answer)
 }
