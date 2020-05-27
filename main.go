@@ -5,6 +5,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/senseyman/image-media-processor/dto"
 	"github.com/senseyman/image-media-processor/server"
+	"github.com/senseyman/image-media-processor/service/db"
 	"github.com/senseyman/image-media-processor/service/media"
 	"github.com/senseyman/image-media-processor/service/store"
 	"github.com/sirupsen/logrus"
@@ -42,7 +43,8 @@ func createServer(cfg *dto.Config, logger *logrus.Logger) *server.APIServer {
 	logger.Info("Registering services...")
 	imgProcessor := media.NewImageService(logger)
 	awsService := store.NewAwsStoreManager(&cfg.Aws, logger)
-	return server.NewAPIServer(cfg.Server.ServerPort, logger, imgProcessor, awsService)
+	mongoDbService := db.NewMongoDbService(&cfg.MongoDb, logger)
+	return server.NewAPIServer(cfg.Server.ServerPort, logger, imgProcessor, awsService, mongoDbService)
 }
 
 // Reading configs from config file. File is required

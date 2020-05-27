@@ -23,4 +23,9 @@ type AwsConfig struct {
 
 // config for NoSql DB MongoDb
 type MongoDbConfig struct {
+	Username   string `toml:"username"`
+	Password   string `toml:"password"`
+	Address    string `toml:"address"`
+	Store      string `toml:"store"`
+	Collection string `toml:"collection"`
 }

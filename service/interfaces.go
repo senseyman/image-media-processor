@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/senseyman/image-media-processor/dto"
-	"github.com/senseyman/image-media-processor/dto/response_dto"
 	"io"
 )
 
@@ -11,5 +10,11 @@ type MediaProcessor interface {
 }
 
 type CloudStore interface {
-	Upload(id uint32, userId string, data []*dto.FileInfoDto) (*response_dto.CloudResponseDto, error)
+	Upload(id uint32, userId string, data []*dto.FileInfoDto) (*dto.CloudResponseDto, error)
+}
+
+type DbStore interface {
+	Insert(storeDto *dto.DbImageStoreDAO) error
+	GetPicture(picId uint32, width, height int) *dto.DbImageStoreDAO
+	FindAllPictureByUserId(userId string) []*dto.DbImageStoreDAO
 }

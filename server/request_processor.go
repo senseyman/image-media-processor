@@ -11,13 +11,15 @@ type ApiServerRequestProcessor struct {
 	requestValidator *validator.Validator
 	imgProcessor     service.MediaProcessor
 	cloudStore       service.CloudStore
+	dbStore          service.DbStore
 }
 
-func NewApiServerRequestProcessor(logger *logrus.Logger, imgProcessor service.MediaProcessor, cloudStore service.CloudStore) *ApiServerRequestProcessor {
+func NewApiServerRequestProcessor(logger *logrus.Logger, imgProcessor service.MediaProcessor, cloudStore service.CloudStore, dbStore service.DbStore) *ApiServerRequestProcessor {
 	return &ApiServerRequestProcessor{
 		logger:           logger,
 		requestValidator: validator.NewValidator(),
 		imgProcessor:     imgProcessor,
 		cloudStore:       cloudStore,
+		dbStore:          dbStore,
 	}
 }

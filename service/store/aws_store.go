@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/senseyman/image-media-processor/dto"
-	"github.com/senseyman/image-media-processor/dto/response_dto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,7 +38,7 @@ func NewAwsStoreManager(config *dto.AwsConfig, logger *logrus.Logger) *AwsStoreM
 	}
 }
 
-func (m *AwsStoreManager) Upload(id uint32, userId string, data []*dto.FileInfoDto) (*response_dto.CloudResponseDto, error) {
+func (m *AwsStoreManager) Upload(id uint32, userId string, data []*dto.FileInfoDto) (*dto.CloudResponseDto, error) {
 	uploader := s3manager.NewUploader(m.session)
 
 	target := fmt.Sprintf(fmt.Sprintf("%s/%d/", userId, id))
@@ -65,5 +64,5 @@ func (m *AwsStoreManager) Upload(id uint32, userId string, data []*dto.FileInfoD
 		})
 	}
 
-	return &response_dto.CloudResponseDto{Data: respArr}, nil
+	return &dto.CloudResponseDto{Data: respArr}, nil
 }

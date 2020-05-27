@@ -13,15 +13,13 @@ import (
 // - return obj - links to orig and resized images
 // - if requested prev image with prev params - just return already processed img link
 
+// TODO add api for resizing old image bi imgId
 // APIServer process http requests
 // Using api version mechanism
-
 type APIServer struct {
 	logger           *logrus.Logger
 	address          string
 	router           *mux.Router
-	imgProcessor     service.MediaProcessor
-	cloudStore       service.CloudStore
 	requestProcessor *ApiServerRequestProcessor
 }
 
@@ -32,12 +30,12 @@ var (
 )
 
 // create new instance of APIServer
-func NewAPIServer(bindAddr string, logger *logrus.Logger, imgProcessor service.MediaProcessor, cloudStore service.CloudStore) *APIServer {
+func NewAPIServer(bindAddr string, logger *logrus.Logger, imgProcessor service.MediaProcessor, cloudStore service.CloudStore, dbStore service.DbStore) *APIServer {
 	return &APIServer{
 		logger:           logger,
 		address:          bindAddr,
 		router:           mux.NewRouter(),
-		requestProcessor: NewApiServerRequestProcessor(logger, imgProcessor, cloudStore),
+		requestProcessor: NewApiServerRequestProcessor(logger, imgProcessor, cloudStore, dbStore),
 	}
 }
 
