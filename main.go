@@ -5,6 +5,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/senseyman/image-media-processor/dto"
 	"github.com/senseyman/image-media-processor/server"
+	"github.com/senseyman/image-media-processor/service/media"
+	"github.com/senseyman/image-media-processor/service/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,9 +14,7 @@ var (
 	configPath = "./config.toml"
 )
 
-// TODO create service for image processing
 // TODO create service for DB
-// TODO create service for AWS
 
 /*
 	main func start application:
@@ -26,9 +26,10 @@ var (
 func main() {
 	cfg := readConfig()
 	logger := configureLogger(cfg)
-	logger.Info("Starting application...")
 
-	apiServer := server.NewAPIServer(cfg.Server.ServerPort, logger)
+	apiServer := createServer(cfg, logger)
+
+	logger.Info("Starting application...")
 
 	if err := apiServer.Start(); err != nil {
 		logger.Fatalf("Cannot start api server: %v", err)
@@ -36,7 +37,15 @@ func main() {
 	}
 }
 
-// config file is required
+// register all necessary services and return api server instance
+func createServer(cfg *dto.Config, logger *logrus.Logger) *server.APIServer {
+	logger.Info("Registering services...")
+	imgProcessor := media.NewImageService(logger)
+	awsService := store.NewAwsStoreManager(&cfg.Aws, logger)
+	return server.NewAPIServer(cfg.Server.ServerPort, logger, imgProcessor, awsService)
+}
+
+// Reading configs from config file. File is required
 func readConfig() *dto.Config {
 	cfg := dto.Config{}
 	if _, err := toml.DecodeFile(configPath, &cfg); err != nil {
@@ -55,6 +64,10 @@ func configureLogger(cfg *dto.Config) *logrus.Logger {
 	}
 	logger := logrus.New()
 	logger.SetLevel(level)
+
+	logger.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
 
 	return logger
 }

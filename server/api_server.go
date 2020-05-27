@@ -1,17 +1,12 @@
 package server
 
 import (
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/senseyman/image-media-processor/service"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-// TODO add routes registration
-// TODO add api version mechanism
-// TODO add check user requests params
-
-// TODO routes:
 // - process/resize image
 // - list prev resized images with inputted params
 // - all api can return errors
@@ -20,10 +15,14 @@ import (
 
 // APIServer process http requests
 // Using api version mechanism
+
 type APIServer struct {
-	logger  *logrus.Logger
-	address string
-	router  *mux.Router
+	logger           *logrus.Logger
+	address          string
+	router           *mux.Router
+	imgProcessor     service.MediaProcessor
+	cloudStore       service.CloudStore
+	requestProcessor *ApiServerRequestProcessor
 }
 
 var (
@@ -33,11 +32,12 @@ var (
 )
 
 // create new instance of APIServer
-func NewAPIServer(bindAddr string, logger *logrus.Logger) *APIServer {
+func NewAPIServer(bindAddr string, logger *logrus.Logger, imgProcessor service.MediaProcessor, cloudStore service.CloudStore) *APIServer {
 	return &APIServer{
-		logger:  logger,
-		address: bindAddr,
-		router:  mux.NewRouter(),
+		logger:           logger,
+		address:          bindAddr,
+		router:           mux.NewRouter(),
+		requestProcessor: NewApiServerRequestProcessor(logger, imgProcessor, cloudStore),
 	}
 }
 
@@ -49,6 +49,7 @@ func (s *APIServer) Start() error {
 }
 
 func (s *APIServer) registerRouters() {
+	s.logger.Info("Registering api routers...")
 	api := s.router.PathPrefix("/api").Subrouter()
 	api.NotFoundHandler = NotFoundHandler
 
@@ -60,16 +61,10 @@ func (s *APIServer) registerRouteV1(parentRouter *mux.Router) {
 
 	apiV1.NotFoundHandler = NotFoundHandler
 
-	// TODO put handle func
-	apiV1.HandleFunc("/resize", s.handleResizeRequest).Methods(http.MethodPost)
-	apiV1.HandleFunc("/list", nil).Methods(http.MethodGet)
+	apiV1.HandleFunc("/resize", s.requestProcessor.HandleResizeRequest).Methods(http.MethodPost)
+	apiV1.HandleFunc("/list", s.requestProcessor.HandleListHistoryRequest).Methods(http.MethodGet)
 }
 
-func (s *APIServer) marshalDtoToJson(data interface{}) []byte {
-	v, err := json.Marshal(data)
-	if err != nil {
-		s.logger.Errorf("Error while marshaling dto to byte array: %v", err)
-		return nil
-	}
-	return v
+func (s *APIServer) GetRouter() *mux.Router {
+	return s.router
 }

@@ -15,6 +15,10 @@ type ServerConfig struct {
 
 // config for Amazon S3 server
 type AwsConfig struct {
+	AwsAccessKeyId     string `toml:"awsAccessKeyId"`
+	AwsSecretAccessKey string `toml:"awsSecretAccessKey"`
+	AwsRegion          string `toml:"awsRegion"`
+	AwsBucket          string `toml:"awsBucket"`
 }
 
 // config for NoSql DB MongoDb

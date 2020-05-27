@@ -4,6 +4,7 @@ type BaseResponseDto struct {
 	UserId    string `json:"user_id"`
 	RequestId string `json:"request_id"`
 	ErrCode   int    `json:"err_code"`
+	ErrMsg    string `json:"err_msg"`
 }
 
 type ResizeImageResponseDto struct {
