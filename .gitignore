@@ -8,4 +8,4 @@ go.sum
 *.so
 *.dylib
 
-config.toml
+config_template.toml

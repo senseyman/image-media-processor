@@ -16,11 +16,6 @@ var (
 )
 
 /*
-	TODO create template config file in repo
-	TODO add Dockerfile
-	TODO add README.md
-*/
-/*
 	main func start application:
 	- init config
 	- init logger

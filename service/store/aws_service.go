@@ -11,6 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
+	"time"
+)
+
+const (
+	Retry     = 3
+	SleepTime = 100 * time.Millisecond
 )
 
 // Service for manage user files in Amazon S3 bucket
@@ -51,13 +57,30 @@ func (m *AwsService) Upload(id uint32, userId string, data []*dto.FileInfoDto) (
 	respArr := make([]*dto.FileCloudStoreDto, 0)
 
 	for _, v := range data {
-		output, err := uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(m.bucket),
-			Key:    aws.String(fmt.Sprintf("%s/%s", target, v.Name)),
-			Body:   v.Buffer,
-		})
+		leftRetry := Retry
+		currentSleepTime := SleepTime
+
+		var (
+			output *s3manager.UploadOutput
+			err    error
+		)
+
+		for leftRetry > 0 {
+			output, err = uploader.Upload(&s3manager.UploadInput{
+				Bucket: aws.String(m.bucket),
+				Key:    aws.String(fmt.Sprintf("%s/%s", target, v.Name)),
+				Body:   v.Buffer,
+			})
+			if err != nil {
+				leftRetry--
+				m.logger.Warnf("Cannot upload original file to aws store. Retrying... Err: %v", err)
+				time.Sleep(currentSleepTime)
+				currentSleepTime += SleepTime
+				continue
+			}
+			break
+		}
 		if err != nil {
-			m.logger.Errorf("Cannot upload original file to aws store: %v", err)
 			return nil, err
 		}
 
@@ -85,15 +108,30 @@ func (m *AwsService) Download(url string, userId string, imageId uint32) (*os.Fi
 	file, _ := os.Create(filepath)
 
 	downloader := s3manager.NewDownloader(m.session)
-	numBytes, err := downloader.Download(file, &s3.GetObjectInput{
-		Bucket: aws.String(m.bucket),
-		Key:    aws.String(fmt.Sprintf("%v/%v/%v", userId, imageId, filepath)),
-	})
+
+	leftRetry := Retry
+	currentSleepTime := SleepTime
+
+	var err error
+
+	for leftRetry > 0 {
+		_, err = downloader.Download(file, &s3.GetObjectInput{
+			Bucket: aws.String(m.bucket),
+			Key:    aws.String(fmt.Sprintf("%v/%v/%v", userId, imageId, filepath)),
+		})
+		if err != nil {
+			leftRetry--
+			m.logger.Warnf("Unable to download item %q. Retrying... Err: %v", filepath, err)
+			time.Sleep(currentSleepTime)
+			currentSleepTime += SleepTime
+			continue
+		}
+		break
+	}
+
 	if err != nil {
-		m.logger.Errorf("Unable to download item %q, %v", filepath, err)
 		return nil, err
 	}
-	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
 
 	return file, nil
 

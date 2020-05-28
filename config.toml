@@ -1,0 +1,16 @@
+[Server]
+ServerPort = ":8080"
+LogLevel = "INFO"
+
+[Aws]
+AwsAccessKeyId     = "SomeKey"
+AwsSecretAccessKey = "SomeSecret"
+AwsRegion          = "eu-central-1"
+AwsBucket          = "bucket"
+
+[MongoDb]
+Username  = "admin"
+Password = "admin"
+Address = "127.0.0.1:27017/test"
+Store = "imageStore"
+Collection = "usersData"
