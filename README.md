@@ -49,13 +49,8 @@ Store = "imageStore"
 Collection = "usersData"
 ```
 
-## REST Api Examples
-| Path | Request example  | 
-| :------: | --------- | 
-| **/api/v1/resize**    |<pre lang="json">{<br>  "user_id": "a393e097-6f4c-493d-9a82-e612b3d7e53d",<br>  "request_id": "423adce85c",<br>  "width": 100",<br>  "height": 200<br>}</pre>| 
-| **/api/v1/resize-by-id**   |<pre lang="json">{<br>  "user_id": "a393e097-6f4c-493d-9a82-e612b3d7e53d",<br>  "request_id": "423adce85c",<br>  "width": 100",<br>  "height": 200,<br>  "image_id": 3652154874<br>}</pre>| 
-| **/api/v1/list**    |<pre>user_id=a393e097-6f4c-493d-9a82-e612b3d7e53d&request_id=423adce85c</pre>| 
-|
+## REST Api
+For more information about API using read [this document](API.md)
 
 ## Docker 
 You can build this application using *docker*. This repository include ***Dockerfile*** and ***docker-compose.yaml*** files.
