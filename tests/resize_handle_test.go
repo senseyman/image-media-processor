@@ -2,35 +2,14 @@ package tests
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"github.com/senseyman/image-media-processor/dto/http_request_dto"
 	"github.com/senseyman/image-media-processor/dto/http_response_dto"
-	"github.com/senseyman/image-media-processor/server"
-	"github.com/senseyman/image-media-processor/service/media"
-	"github.com/senseyman/image-media-processor/tests/mock"
 	"github.com/senseyman/image-media-processor/utils"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
-
-const (
-	ApiPathResize = "/api/v1/resize"
-
-	ImageTag             = "file"
-	ImageName            = "image.jpeg"
-	UnsupportedImageName = "image.tmp"
-)
-
-func ResizeRouter() *mux.Router {
-	router := mux.NewRouter()
-	logger := logrus.New()
-	processor := server.NewApiServerRequestProcessor(logger, media.NewImageService(logger), &mock.CloudStoreMock{}, &mock.DbStoreMock{})
-	router.HandleFunc("/api/v1/resize", processor.HandleResizeRequest).Methods(http.MethodPost)
-	return router
-}
 
 /*
 	Cases
@@ -52,7 +31,7 @@ func TestResizeImage_WrongRequestType(t *testing.T) {
 	request.Header.Set("Content-type", "application/json")
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusMethodNotAllowed, response.Code, "Incorrect response status code on wrong request type")
 }
@@ -62,7 +41,7 @@ func TestResizeImage_InvalidParams_EmptyRequest(t *testing.T) {
 	request.Header.Set("Content-type", "application/json")
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -84,7 +63,7 @@ func TestResizeImage_InvalidParams_WithoutImage(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -103,7 +82,7 @@ func TestResizeImage_InvalidParams_WithoutParams(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -125,7 +104,7 @@ func TestResizeImage_InvalidParams_IncorrectUserId(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -147,7 +126,7 @@ func TestResizeImage_InvalidParams_IncorrectRequestId(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -169,7 +148,7 @@ func TestResizeImage_InvalidParams_IncorrectWidth(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -191,7 +170,7 @@ func TestResizeImage_InvalidParams_IncorrectHeight(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -211,7 +190,7 @@ func TestResizeImage_InvalidParams_UnsupportedImageType(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(true).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
@@ -231,7 +210,7 @@ func TestResizeImage_Positive(t *testing.T) {
 	request.Header.Add("Content-Type", contentType)
 	response := httptest.NewRecorder()
 
-	ResizeRouter().ServeHTTP(response, request)
+	ResizeRouter(false).ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusOK, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}

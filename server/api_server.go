@@ -13,7 +13,6 @@ import (
 // - return obj - links to orig and resized images
 // - if requested prev image with prev params - just return already processed img link
 
-// TODO add api for resizing old image bi imgId
 // APIServer process http requests
 // Using api version mechanism
 type APIServer struct {
@@ -60,6 +59,7 @@ func (s *APIServer) registerRouteV1(parentRouter *mux.Router) {
 	apiV1.NotFoundHandler = NotFoundHandler
 
 	apiV1.HandleFunc("/resize", s.requestProcessor.HandleResizeRequest).Methods(http.MethodPost)
+	apiV1.HandleFunc("/resize-by-id", s.requestProcessor.HandleResizeByIdRequest).Methods(http.MethodPost)
 	apiV1.HandleFunc("/list", s.requestProcessor.HandleListHistoryRequest).Methods(http.MethodGet)
 }
 

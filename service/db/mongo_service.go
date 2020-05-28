@@ -76,6 +76,22 @@ func (m *MongoDbService) GetImage(picId uint32, width, height int) *dto.DbImageS
 	return &res
 }
 
+func (m *MongoDbService) GetImageByImageId(picId uint32) *dto.DbImageStoreDAO {
+	col := m.client.Database(m.ImageStore).Collection(m.UsersCollection)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	res := dto.DbImageStoreDAO{}
+	err := col.FindOne(ctx, bson.D{{"picid", picId}}).Decode(&res)
+
+	if err != nil {
+		m.logger.Warnf("Cannot get data from db by request (picid: %d), err: %v", picId, err)
+		return nil
+	}
+
+	return &res
+}
+
 // Collect all user images by userId
 func (m *MongoDbService) FindAllPictureByUserId(userId string) []*dto.DbImageStoreDAO {
 	col := m.client.Database(m.ImageStore).Collection(m.UsersCollection)

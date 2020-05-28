@@ -33,7 +33,8 @@ func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWrit
 	if err != nil {
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
 		s.logger.Errorf(errMsg)
-		writeErrResponseListRequest(w, answer, jsonEncoder, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
+		writeErrResponseListRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
+		jsonEncoder.Encode(answer)
 		return
 	}
 	answer.UserId = rDto.UserId
@@ -51,7 +52,8 @@ func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWrit
 	if allImgs == nil {
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgCannotGetUserImages, err)
 		logEntity.Errorf(errMsg)
-		writeErrResponseListRequest(w, answer, jsonEncoder, http.StatusInternalServerError, utils.ErrCannotGetUserImagesCode, errMsg)
+		writeErrResponseListRequest(w, answer, http.StatusInternalServerError, utils.ErrCannotGetUserImagesCode, errMsg)
+		jsonEncoder.Encode(answer)
 		return
 	}
 

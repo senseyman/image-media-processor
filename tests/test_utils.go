@@ -4,11 +4,52 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/senseyman/image-media-processor/dto/http_request_dto"
+	"github.com/senseyman/image-media-processor/server"
+	"github.com/sirupsen/logrus"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"os"
 )
+
+/*
+
+ */
+const (
+	ApiPathList       = "/api/v1/list"
+	ApiPathResize     = "/api/v1/resize"
+	ApiPathResizeById = "/api/v1/resize-by-id"
+
+	ImageTag             = "file"
+	ImageName            = "image.jpeg"
+	UnsupportedImageName = "image.tmp"
+)
+
+func ResizeRouter(returnResizeError bool) *mux.Router {
+	router := mux.NewRouter()
+	logger := logrus.New()
+	processor := server.NewApiServerRequestProcessor(logger, &MediaProcessorMock{ReturnError: returnResizeError}, &CloudStoreMock{}, &DbStoreMock{})
+	router.HandleFunc(ApiPathResize, processor.HandleResizeRequest).Methods(http.MethodPost)
+	return router
+}
+
+func ResizeByIdRouterRouter() *mux.Router {
+	router := mux.NewRouter()
+	logger := logrus.New()
+	processor := server.NewApiServerRequestProcessor(logger, &MediaProcessorMock{}, &CloudStoreMock{}, &DbStoreMock{})
+	router.HandleFunc(ApiPathResizeById, processor.HandleResizeByIdRequest).Methods(http.MethodPost)
+	return router
+}
+
+func ListRouter() *mux.Router {
+	router := mux.NewRouter()
+	logger := logrus.New()
+	processor := server.NewApiServerRequestProcessor(logger, &MediaProcessorMock{}, &CloudStoreMock{}, &DbStoreMock{})
+	router.HandleFunc(ApiPathList, processor.HandleListHistoryRequest).Methods(http.MethodGet)
+	return router
+}
 
 func GenerateResizeRequestBody() *http_request_dto.ResizeImageRequestParamsDto {
 	return &http_request_dto.ResizeImageRequestParamsDto{
@@ -20,6 +61,20 @@ func GenerateResizeRequestBody() *http_request_dto.ResizeImageRequestParamsDto {
 			Width:  10,
 			Height: 10,
 		},
+	}
+}
+
+func GenerateResizeByIdRequestBody() *http_request_dto.ResizeImageByImageIdRequestParamsDto {
+	return &http_request_dto.ResizeImageByImageIdRequestParamsDto{
+		BaseRequestDto: http_request_dto.BaseRequestDto{
+			UserId:    "sss",
+			RequestId: "ddd",
+		},
+		SizeRequestDto: http_request_dto.SizeRequestDto{
+			Width:  13,
+			Height: 13,
+		},
+		ImageId: 10,
 	}
 }
 

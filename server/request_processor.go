@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"github.com/senseyman/image-media-processor/dto/http_response_dto"
 	"github.com/senseyman/image-media-processor/service"
 	"github.com/sirupsen/logrus"
@@ -27,16 +26,14 @@ func NewApiServerRequestProcessor(logger *logrus.Logger, imgProcessor service.Me
 	}
 }
 
-func writeErrResponseListRequest(w http.ResponseWriter, answer *http_response_dto.UserImagesListResponseDto, encoder *json.Encoder, serverCode int, errCode int, errMsg string) {
+func writeErrResponseListRequest(w http.ResponseWriter, answer *http_response_dto.UserImagesListResponseDto, serverCode int, errCode int, errMsg string) {
 	w.WriteHeader(serverCode)
 	answer.ErrCode = errCode
 	answer.ErrMsg = errMsg
-	encoder.Encode(answer)
 }
 
-func writeErrResponseResizeRequest(w http.ResponseWriter, answer *http_response_dto.ResizeImageResponseDto, encoder *json.Encoder, serverCode int, errCode int, errMsg string) {
+func writeErrResponseResizeRequest(w http.ResponseWriter, answer *http_response_dto.ResizeImageResponseDto, serverCode int, errCode int, errMsg string) {
 	w.WriteHeader(serverCode)
 	answer.ErrCode = errCode
 	answer.ErrMsg = errMsg
-	encoder.Encode(answer)
 }

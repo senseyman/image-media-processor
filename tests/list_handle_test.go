@@ -3,30 +3,13 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/senseyman/image-media-processor/dto/http_response_dto"
-	"github.com/senseyman/image-media-processor/server"
-	"github.com/senseyman/image-media-processor/service/media"
-	"github.com/senseyman/image-media-processor/tests/mock"
 	"github.com/senseyman/image-media-processor/utils"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
-
-const (
-	ApiPathList = "/api/v1/list"
-)
-
-func ListRouter() *mux.Router {
-	router := mux.NewRouter()
-	logger := logrus.New()
-	processor := server.NewApiServerRequestProcessor(logger, media.NewImageService(logger), &mock.CloudStoreMock{}, &mock.DbStoreMock{})
-	router.HandleFunc(ApiPathList, processor.HandleListHistoryRequest).Methods(http.MethodGet)
-	return router
-}
 
 /*
 	Cases:
