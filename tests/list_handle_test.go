@@ -39,7 +39,10 @@ func TestList_InvalidRequest_EmptyRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect response status code on wrong request type")
 	responseDto := http_response_dto.UserImagesListResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong err code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong err message")
@@ -57,7 +60,10 @@ func TestList_InvalidRequest_WithoutUserId(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect response status code on wrong request type")
 	responseDto := http_response_dto.UserImagesListResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong err code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong err message")
@@ -75,7 +81,10 @@ func TestList_InvalidRequest_WithoutRequestId(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect response status code on wrong request type")
 	responseDto := http_response_dto.UserImagesListResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong err code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong err message")
@@ -95,7 +104,10 @@ func TestList_Positive(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.Code, "Incorrect response status code on wrong request type")
 	responseDto := http_response_dto.UserImagesListResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Empty(t, responseDto.ErrCode, "Error code not empty")
 	assert.Empty(t, responseDto.ErrMsg, "Error message not empty")

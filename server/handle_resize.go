@@ -29,7 +29,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	if err := r.ParseMultipartForm(100 << 20); err != nil {
 		s.logger.Errorf("Cannot pars multipart form: %v", err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrEmptyRequestCode, utils.ErrMsgEmptyRequest)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 	// getting file from request using tag 'file'
@@ -37,7 +40,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	if err != nil {
 		s.logger.Errorf("%s : %v", utils.ErrMsgFileNotFoundInRequest, err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrFileNotFoundInRequestCode, utils.ErrMsgFileNotFoundInRequest)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -46,7 +52,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	if len(params) == 0 {
 		s.logger.Errorf("%s : %v", utils.ErrMsgParamsNotSetInRequest, err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrParamsNotSetInRequestCode, utils.ErrMsgParamsNotSetInRequest)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -56,7 +65,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	if err != nil {
 		s.logger.Errorf("%s : %v", utils.ErrMsgCannotParseRequestParams, err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrCannotParseRequestParamsCode, utils.ErrMsgCannotParseRequestParams)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -66,7 +78,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
 		s.logger.Errorf(errMsg)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -75,7 +90,17 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	answer.RequestId = rDto.RequestId
 
 	// generate image id
-	imageId := utils.GenerateImageIdByOriginalName(handler.Filename)
+	imageId, err := utils.GenerateImageIdByOriginalName(handler.Filename)
+	if err != nil {
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrImageIdGenerate, err)
+		s.logger.Errorf(errMsg)
+		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrImageIdGenerateCode, errMsg)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
+		return
+	}
 
 	logEntry := s.logger.WithFields(logrus.Fields{
 		"UserId":    rDto.UserId,
@@ -98,7 +123,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 		answer.ImageId = imageId
 		answer.OriginalImagePath = existEl.OriginalImageUrl
 		answer.ResizedImagePath = existEl.ResizedImageUrl
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -106,7 +134,10 @@ func (s *ApiServerRequestProcessor) HandleResizeRequest(w http.ResponseWriter, r
 	s.processImageResizeWorkflow(file, handler.Filename, rDto.Width, rDto.Height, imageId, rDto.UserId, w, answer, logEntry, true)
 
 	// send answer to caller
-	jsonEncoder.Encode(answer)
+	err = jsonEncoder.Encode(answer)
+	if err != nil {
+		s.logger.Errorf("Cannot send response: %v", err)
+	}
 
 }
 
@@ -121,14 +152,20 @@ func (s *ApiServerRequestProcessor) HandleResizeByIdRequest(w http.ResponseWrite
 	if r.Body == nil {
 		s.logger.Error(utils.ErrMsgEmptyRequest)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrEmptyRequestCode, utils.ErrMsgEmptyRequest)
-		jsonEncoder.Encode(answer)
+		err := jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 	err := json.NewDecoder(r.Body).Decode(&rDto)
 	if err != nil {
 		s.logger.Errorf("Cannot parse request: %v", err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrCannotParseRequestParamsCode, utils.ErrMsgCannotParseRequestParams)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -138,7 +175,10 @@ func (s *ApiServerRequestProcessor) HandleResizeByIdRequest(w http.ResponseWrite
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
 		s.logger.Errorf(errMsg)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -161,7 +201,10 @@ func (s *ApiServerRequestProcessor) HandleResizeByIdRequest(w http.ResponseWrite
 		logEntry.Warn("Image already processed with this size params")
 		answer.OriginalImagePath = exist.OriginalImageUrl
 		answer.ResizedImagePath = exist.ResizedImageUrl
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -170,16 +213,22 @@ func (s *ApiServerRequestProcessor) HandleResizeByIdRequest(w http.ResponseWrite
 	if img == nil {
 		logEntry.Error("This image never processed by user requests")
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrImageNotFoundCode, utils.ErrMsgImageNotFound)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
 	// try to download files using image url
 	file, err := s.cloudStore.Download(img.OriginalImageUrl, rDto.UserId, rDto.ImageId)
 	if err != nil {
-		logEntry.Error("Cannot download image from cloud store: %v", err)
+		logEntry.Errorf("Cannot download image from cloud store: %v", err)
 		writeErrResponseResizeRequest(w, answer, http.StatusBadRequest, utils.ErrLoadFileCode, utils.ErrMsgLoadFile)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
@@ -193,7 +242,10 @@ func (s *ApiServerRequestProcessor) HandleResizeByIdRequest(w http.ResponseWrite
 	answer.OriginalImagePath = img.OriginalImageUrl
 
 	// send answer to caller
-	jsonEncoder.Encode(answer)
+	err = jsonEncoder.Encode(answer)
+	if err != nil {
+		s.logger.Errorf("Cannot send response: %v", err)
+	}
 
 }
 
@@ -226,7 +278,7 @@ func (s *ApiServerRequestProcessor) uploadFileToCloud(imageId uint32, userId str
 	cloudResp, err := s.cloudStore.Upload(imageId, userId, upld)
 
 	if err != nil {
-		logEntity.Errorf("%s: %v", answer.RequestId, utils.ErrMsgUploadImage, err)
+		logEntity.Errorf("%s. RequestId: %s. Err: %v", utils.ErrMsgUploadImage, answer.RequestId, err)
 		writeErrResponseResizeRequest(w, answer, http.StatusInternalServerError, utils.ErrUploadImageCode, utils.ErrMsgUploadImage)
 		return nil
 	}
@@ -250,7 +302,7 @@ func (s *ApiServerRequestProcessor) storeToDb(userId string, imageId uint32, ori
 	})
 
 	if err != nil {
-		logEntity.Errorf("%s: %v", answer.RequestId, utils.ErrMsgSaveInfoToDB, err)
+		logEntity.Errorf("%s. RequestId: %s. Err: %v", utils.ErrMsgSaveInfoToDB, answer.RequestId, err)
 		writeErrResponseResizeRequest(w, answer, http.StatusInternalServerError, utils.ErrSaveInfoToDBCode, utils.ErrMsgSaveInfoToDB)
 		return err
 	}

@@ -13,6 +13,7 @@ const (
 	ErrCannotGetUserImagesCode
 	ErrImageNotFoundCode
 	ErrLoadFileCode
+	ErrImageIdGenerateCode
 )
 
 // error messages
@@ -28,4 +29,5 @@ const (
 	ErrMsgCannotGetUserImages       = "Cannot get user images from DB"
 	ErrMsgImageNotFound             = "Image not found"
 	ErrMsgLoadFile                  = "Cannot download file"
+	ErrImageIdGenerate              = "Cannot generate image id"
 )
