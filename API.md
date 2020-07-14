@@ -2,8 +2,8 @@
 
 [<= Back to main readme file](README.md)
 
-## 1. /api/v1/resize
-
+## 1. /api/v1/resize (for resizing image)
+ 
 ### Call parameters example
 ```json
 {
@@ -26,7 +26,7 @@
     "resized_image_path": "https://amazonaws.com/a393e097-6f4c-493d-9a82-e612b3d7e53d/1941592313/images_1400x200.jpeg"
 }
 ```
-## 2. /api/v1/resize-by-id
+## 2. /api/v1/resize-by-id (for resizing image that previously was resized)
 
 ### Call parameters example
 ```json
@@ -50,7 +50,7 @@
     "resized_image_path": "https://amazonaws.com/a393e097-6f4c-493d-9a82-e612b3d7e53d/1941592313/images_22x345.jpeg"
 }
 ```
-## 3. /api/v1/list
+## 3. /api/v1/list (show all processed images with path to original, resized images and resize params)
 
 ### Call parameters example
 ```text
