@@ -52,7 +52,7 @@ func NewAwsService(config *dto.AwsConfig, logger *logrus.Logger) *AwsService {
 func (m *AwsService) Upload(id uint32, userId string, data []*dto.FileInfoDto) (*dto.CloudResponseDto, error) {
 	uploader := s3manager.NewUploader(m.session)
 
-	target := fmt.Sprintf(fmt.Sprintf("%s/%d/", userId, id))
+	target := fmt.Sprintf("%s/%d/", userId, id)
 
 	respArr := make([]*dto.FileCloudStoreDto, 0)
 

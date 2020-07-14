@@ -22,19 +22,42 @@ func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWrit
 	jsonEncoder := json.NewEncoder(w)
 	s.logger.Info("Got user request")
 
-	r.ParseForm()
-	rDto := http_request_dto.BaseRequestDto{}
-
-	// try to decode request params
-	schema.NewDecoder().Decode(&rDto, r.URL.Query())
-
-	// validate user request after mapping
-	err := s.requestValidator.Validate(rDto)
+	err := r.ParseForm()
 	if err != nil {
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
 		s.logger.Errorf(errMsg)
 		writeErrResponseListRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
+		return
+	}
+	rDto := http_request_dto.BaseRequestDto{}
+
+	// try to decode request params
+	err = schema.NewDecoder().Decode(&rDto, r.URL.Query())
+	if err != nil {
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
+		s.logger.Errorf(errMsg)
+		writeErrResponseListRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
+		return
+	}
+
+	// validate user request after mapping
+	err = s.requestValidator.Validate(rDto)
+	if err != nil {
+		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgInvalidRequestParamValues, err)
+		s.logger.Errorf(errMsg)
+		writeErrResponseListRequest(w, answer, http.StatusBadRequest, utils.ErrInvalidRequestParamValuesCode, errMsg)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 	answer.UserId = rDto.UserId
@@ -53,16 +76,22 @@ func (s *ApiServerRequestProcessor) HandleListHistoryRequest(w http.ResponseWrit
 		errMsg := fmt.Sprintf("%s: %v", utils.ErrMsgCannotGetUserImages, err)
 		logEntity.Errorf(errMsg)
 		writeErrResponseListRequest(w, answer, http.StatusInternalServerError, utils.ErrCannotGetUserImagesCode, errMsg)
-		jsonEncoder.Encode(answer)
+		err = jsonEncoder.Encode(answer)
+		if err != nil {
+			s.logger.Errorf("Cannot send response: %v", err)
+		}
 		return
 	}
 
-	logEntity.Info("Found records in DB: %d", len(allImgs))
+	logEntity.Infof("Found records in DB: %d", len(allImgs))
 	// collect all user images through imageId
 	processDbResponse(answer, allImgs)
 
 	// send answer to caller
-	jsonEncoder.Encode(answer)
+	err = jsonEncoder.Encode(answer)
+	if err != nil {
+		s.logger.Errorf("Cannot send response: %v", err)
+	}
 }
 
 func processDbResponse(resp *http_response_dto.UserImagesListResponseDto, values []*dto.DbImageStoreDAO) {

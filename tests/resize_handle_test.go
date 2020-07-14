@@ -45,7 +45,11 @@ func TestResizeImage_InvalidParams_EmptyRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	assert.Equal(t, utils.ErrEmptyRequestCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgEmptyRequest, "Wrong error message")
 	assert.Empty(t, responseDto.RequestId, "RequestId not empty")
@@ -67,7 +71,10 @@ func TestResizeImage_InvalidParams_WithoutImage(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrFileNotFoundInRequestCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgFileNotFoundInRequest, "Wrong error message")
@@ -86,7 +93,10 @@ func TestResizeImage_InvalidParams_WithoutParams(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrParamsNotSetInRequestCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgParamsNotSetInRequest, "Wrong error message")
@@ -108,7 +118,10 @@ func TestResizeImage_InvalidParams_IncorrectUserId(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong error message")
@@ -130,7 +143,10 @@ func TestResizeImage_InvalidParams_IncorrectRequestId(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong error message")
@@ -152,7 +168,10 @@ func TestResizeImage_InvalidParams_IncorrectWidth(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong error message")
@@ -174,7 +193,10 @@ func TestResizeImage_InvalidParams_IncorrectHeight(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrInvalidRequestParamValuesCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgInvalidRequestParamValues, "Wrong error message")
@@ -194,7 +216,10 @@ func TestResizeImage_InvalidParams_UnsupportedImageType(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, utils.ErrCannotResizeImageCode, responseDto.ErrCode, "Wrong error code")
 	assert.Contains(t, responseDto.ErrMsg, utils.ErrMsgCannotResizeImage, "Wrong error message")
@@ -214,7 +239,10 @@ func TestResizeImage_Positive(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.Code, "Incorrect server response code")
 	responseDto := http_response_dto.ResizeImageResponseDto{}
-	json.Unmarshal(response.Body.Bytes(), &responseDto)
+	err := json.Unmarshal(response.Body.Bytes(), &responseDto)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	assert.Equal(t, 0, responseDto.ErrCode, "Error code not zero")
 	assert.Empty(t, responseDto.ErrMsg, "Error message not empty")

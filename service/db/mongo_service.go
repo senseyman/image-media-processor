@@ -6,6 +6,7 @@ import (
 	"github.com/senseyman/image-media-processor/dto"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
@@ -86,7 +87,7 @@ func (m *MongoDbService) GetImage(picId uint32, width, height int) *dto.DbImageS
 
 	var err error
 	for leftRetry > 0 {
-		err = col.FindOne(ctx, bson.D{{"picid", picId}, {"resizedwidth", width}, {"resizedheight", height}}).Decode(&res)
+		err = col.FindOne(ctx, bson.D{primitive.E{Key: "picid", Value: picId}, primitive.E{Key: "resizedwidth", Value: width}, primitive.E{Key: "resizedheight", Value: height}}).Decode(&res)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "no documents in result") {
@@ -116,7 +117,7 @@ func (m *MongoDbService) GetImageByImageId(picId uint32) *dto.DbImageStoreDAO {
 
 	var err error
 	for leftRetry > 0 {
-		err = col.FindOne(ctx, bson.D{{"picid", picId}}).Decode(&res)
+		err = col.FindOne(ctx, bson.D{primitive.E{Key: "picid", Value: picId}}).Decode(&res)
 
 		if err != nil {
 			leftRetry--
@@ -147,7 +148,7 @@ func (m *MongoDbService) FindAllPictureByUserId(userId string) []*dto.DbImageSto
 	currentSleepTime := SleepTime
 
 	for leftRetry > 0 {
-		cursor, err := col.Find(ctx, bson.D{{"userid", userId}})
+		cursor, err := col.Find(ctx, bson.D{primitive.E{Key: "userid", Value: userId}})
 		if err != nil {
 			leftRetry--
 			logEntity.Warnf("Cannot get records from db. Retrying... Err: %v", err)
