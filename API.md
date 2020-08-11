@@ -1,6 +1,6 @@
 # Example API using
 
-[<= Back to main readme file](README.md)
+[<= Back to main README file](README.md)
 
 ## 1. /api/v1/resize (for resizing image)
  
