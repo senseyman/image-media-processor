@@ -7,7 +7,7 @@
 ### Call parameters example
 ```json
 {
-  "user_id": "a393e097-6f4c-493d-9a82-e612b3d7e53d", 
+  "user_id": "a493e097-6f4c-493d-9a82-e612b3d7e53d", 
   "width": 1400, 
   "height": 200, 
   "request_id":"zzz1"
@@ -17,7 +17,7 @@
 ### Response example
 ```json
 {
-    "user_id": "a393e097-6f4c-493d-9a82-e612b3d7e53d",
+    "user_id": "a4Y93e097-6f4c-493d-9a82-e612b3d7e53d",
     "request_id": "zzz1",
     "err_code": 0,
     "err_msg": "",
